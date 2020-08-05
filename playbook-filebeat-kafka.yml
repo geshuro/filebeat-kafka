@@ -60,11 +60,16 @@
           setup.kibana: 
             host: "{{hostnamekibana}}"
             protocol: "http"
-          output.elasticsearch: 
-            enabled: true 
-            hosts: ["{{hostnameelasticsearch}}"]
-            protocol: "http"
-            index: "kafka-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+          #output.elasticsearch:
+          #  enabled: true
+          #  hosts: ["{{hostnameelasticsearch}}"]
+          #  protocol: "http"
+          #  index: "kafka-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+          output.kafka:
+            hosts: ["{{hostnamekafka}}"]
+            topic: "filebeat-kafka-topic"
+            codec.json:
+              pretty: false
           processors: 
           - add_host_metadata: ~
           - add_cloud_metadata: ~
