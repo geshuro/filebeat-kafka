@@ -57,9 +57,9 @@
             index.codec: best_compression 
           setup.template.name: "kafka-filebeat" 
           setup.template.pattern: "kafka-filebeat-*"
-          setup.kibana: 
-            host: "{{hostnamekibana}}"
-            protocol: "http"
+          #setup.kibana: 
+          #  host: "{{hostnamekibana}}"
+          #  protocol: "http"
           #output.elasticsearch:
           #  enabled: true
           #  hosts: ["{{hostnameelasticsearch}}"]
@@ -67,7 +67,7 @@
           #  index: "kafka-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
           output.kafka:
             hosts: ["{{hostnamekafka}}"]
-            topic: "filebeat-kafka-topic"
+            topic: "{{topico}}"
             codec.json:
               pretty: false
           processors: 
