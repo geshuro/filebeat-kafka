@@ -58,7 +58,7 @@
           setup.template.name: "kafka-filebeat" 
           setup.template.pattern: "kafka-filebeat-*"
           output.kafka:
-            hosts: [{{hostnamekafka}}]
+            hosts: ["{{hostnamekafka}}"]
             topic: "{{topico}}"
             codec.json:
               pretty: false
