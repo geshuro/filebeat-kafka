@@ -1,0 +1,81 @@
+################################################## 
+# Playbook Filebeat en Ubuntu 18.04 
+################################################## 
+--- 
+- name: Playbook Filebeat 
+  become: true 
+  hosts: 127.0.0.1 
+  connection: local 
+  tasks: 
+    #Instalacion de FileBeat 
+    - name: Descargar key Elastic 
+      apt_key: 
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch 
+        state: present 
+    - name: Instalar apt-transport-https 
+      apt: 
+        name: apt-transport-https 
+        state: present 
+    - name: Instalar apt repositorio 
+      apt_repository: 
+        repo: deb https://artifacts.elastic.co/packages/7.x/apt stable main 
+        state: present 
+        filename: elastic-7.x.list 
+    - name: Instalar FileBeat 
+      apt: 
+        name: filebeat 
+        state: present 
+    #Configuracion de FileBeat 
+    - name: Eliminar archivo de configuracion de FileBeat por defecto 
+      file: 
+        path: /etc/filebeat/filebeat.yml 
+        state: absent 
+    - name: Crear archivo de configuracion de FileBeat 
+      file: 
+        path: /etc/filebeat/filebeat.yml 
+        state: touch 
+        mode: u=rw,g=r,o=r 
+    - name: Configurar archivo de servicio FileBeat 
+      blockinfile: 
+        name: /etc/filebeat/filebeat.yml 
+        marker: "" 
+        block: | 
+          filebeat.modules: 
+            - module: kafka 
+              log: 
+                enabled: true 
+                var.kafka_home: 
+                    /usr/local/kafka
+                var.paths: 
+                  - "/usr/local/kafka/logs/controller.log*" 
+                  - "/usr/local/kafka/logs/server.log*" 
+                  - "/usr/local/kafka/logs/state-change.log*" 
+                  - "/usr/local/kafka/logs/kafka-*.log*" 
+          setup.ilm.enabled: false
+          setup.template.settings: 
+            index.number_of_shards: 1 
+            index.codec: best_compression 
+          setup.template.name: "kafka-filebeat" 
+          setup.template.pattern: "kafka-filebeat-*"
+          setup.kibana: 
+            host: "{{hostnamekibana}}"
+            protocol: "http"
+          output.elasticsearch: 
+            enabled: true 
+            hosts: ["{{hostnameelasticsearch}}"]
+            protocol: "http"
+            index: "kafka-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+          processors: 
+          - add_host_metadata: ~
+          - add_cloud_metadata: ~
+    - name: Limpiar archivo configuracion FileBeat 
+      lineinfile: 
+        name: /etc/filebeat/filebeat.yml 
+        state: absent 
+        regexp: '^$' 
+    #Inciar servicio de FileBeat 
+    - name: Iniciar el servicio de FileBeat 
+      systemd: 
+        name: filebeat 
+        state: started 
+        enabled: yes
